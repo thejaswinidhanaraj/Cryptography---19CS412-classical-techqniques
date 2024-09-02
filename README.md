@@ -482,57 +482,87 @@ ALGORITHM DESCRIPTION:
 In the rail fence cipher, the plaintext is written downwards and diagonally on successive "rails" of an imaginary fence, then moving up when we reach the bottom rail. When we reach the top rail, the message is written downwards again until the whole plaintext is written out. The message is then read off in rows.
 
 ## PROGRAM:
+```
+#include <stdio.h>
+#include <string.h>
+void encryptRailFence(char *text, int key, char *cipherText);
+void decryptRailFence(char *cipherText, int key, char *plainText);
+int main() {
+    char text[100], cipherText[100], decryptedText[100];
+    int key;
+    printf("Enter the plaintext: ");
+    scanf("%s", text);
+    printf("Enter the key (number of rails): ");
+    scanf("%d", &key);
+    encryptRailFence(text, key, cipherText);
+    printf("Encrypted text: %s\n", cipherText);
+    decryptRailFence(cipherText, key, decryptedText);
+    printf("Decrypted text: %s\n", decryptedText);
 
-PROGRAM:
-#include<stdio.h> #include<string.h> #include<stdlib.h> main()
-{
-int i,j,len,rails,count,code[100][1000]; char str[1000];
-printf("Enter a Secret Message\n"); gets(str);
-len=strlen(str);
-printf("Enter number of rails\n"); scanf("%d",&rails); for(i=0;i<rails;i++)
-{
-for(j=0;j<len;j++)
-{
-code[i][j]=0;
+    return 0;
 }
+void encryptRailFence(char *text, int key, char *cipherText) {
+    int len = strlen(text);
+    char rail[key][len];
+    int i, j;
+    for (i = 0; i < key; i++)
+        for (j = 0; j < len; j++)
+            rail[i][j] = '\n';
+    int dir_down = 0; // Direction flag
+    int row = 0, col = 0;
+    for (i = 0; i < len; i++) {
+        if (row == 0 || row == key - 1)
+            dir_down = !dir_down; 
+        rail[row][col++] = text[i];
+        dir_down ? row++ : row--;
+    }
+    int k = 0;
+    for (i = 0; i < key; i++)
+        for (j = 0; j < len; j++)
+            if (rail[i][j] != '\n')
+                cipherText[k++] = rail[i][j];
+    cipherText[k] = '\0';
 }
-count=0; j=0;
-while(j<len)
-{
-if(count%2==0)
-{
-for(i=0;i<rails;i++)
-{
-//strcpy(code[i][j],str[j]);
-code[i][j]=(int)str[j]; j++;
-}
+void decryptRailFence(char *cipherText, int key, char *plainText) {
+    int len = strlen(cipherText);
+    char rail[key][len];
+    int i, j;
+    for (i = 0; i < key; i++)
+        for (j = 0; j < len; j++)
+            rail[i][j] = '\n';
+    int dir_down = 0;
+    int row = 0, col = 0;
+    for (i = 0; i < len; i++) {
+        if (row == 0)
+            dir_down = 1;
+        if (row == key - 1)
+            dir_down = 0;
 
+        rail[row][col++] = '*';
+        dir_down ? row++ : row--;
+    }
+    int index = 0;
+    for (i = 0; i < key; i++)
+        for (j = 0; j < len; j++)
+            if (rail[i][j] == '*' && index < len)
+                rail[i][j] = cipherText[index++];
+    dir_down = 0;
+    row = 0, col = 0;
+    for (i = 0; i < len; i++) {
+        if (row == 0)
+            dir_down = 1;
+        if (row == key - 1)
+            dir_down = 0;
+        if (rail[row][col] != '*')
+            plainText[i] = rail[row][col++];
+        dir_down ? row++ : row--;
+    }
+    plainText[i] = '\0';
 }
-else
-{
- 
-for(i=rails-2;i>0;i--)
-{
-code[i][j]=(int)str[j]; j++;
-}
-}
-
-count++;
-}
-
-for(i=0;i<rails;i++)
-{
-for(j=0;j<len;j++)
-{
-if(code[i][j]!=0) printf("%c",code[i][j]);
-}
-}
-printf("\n");
-}
+```
 ## OUTPUT:
-OUTPUT:
-Enter a Secret Message wearediscovered
-Enter number of rails 2
-waeicvrderdsoee
+
+![Screenshot 2024-09-02 105155](https://github.com/user-attachments/assets/344c73e3-f7ed-488a-ad04-41916857f7ed)
+
 ## RESULT:
 The program is executed successfully
